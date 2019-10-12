@@ -14,8 +14,8 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
-import { configureStore } from './store/configureStore';
-import { increment, decrement } from './actions/counter';
+import { configureStore } from './shared/store/configureStore';
+import { increment, decrement } from './shared/actions/counter';
 
 const store = configureStore(undefined, 'main');
 
@@ -27,7 +27,8 @@ export default class AppUpdater {
   }
 }
 
-let mainWindow = null;
+let window1 = null;
+let window2 = null;
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -71,34 +72,59 @@ app.on('ready', async () => {
     await installExtensions();
   }
 
-  mainWindow = new BrowserWindow({
+  window1 = new BrowserWindow({
     show: false,
     width: 1024,
     height: 728
   });
 
-  mainWindow.loadURL(`file://${__dirname}/app.html`);
+  window2 = new BrowserWindow({
+    show: false,
+    width: 1024,
+    height: 728
+  });
+
+  window1.loadURL(`file://${__dirname}/window1/app.html`);
+  window2.loadURL(`file://${__dirname}/window2/app.html`);
 
   // @TODO: Use 'ready-to-show' event
   //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event
-  mainWindow.webContents.on('did-finish-load', () => {
-    if (!mainWindow) {
-      throw new Error('"mainWindow" is not defined');
+  window1.webContents.on('did-finish-load', () => {
+    if (!window1) {
+      throw new Error('"window1" is not defined');
     }
     if (process.env.START_MINIMIZED) {
-      mainWindow.minimize();
+      window1.minimize();
     } else {
-      mainWindow.show();
-      mainWindow.focus();
+      window1.show();
+      window1.focus();
     }
   });
 
-  mainWindow.on('closed', () => {
-    mainWindow = null;
+  window2.webContents.on('did-finish-load', () => {
+    if (!window2) {
+      throw new Error('"window2" is not defined');
+    }
+    if (process.env.START_MINIMIZED) {
+      window2.minimize();
+    } else {
+      window2.show();
+      window2.focus();
+    }
   });
 
-  const menuBuilder = new MenuBuilder(mainWindow);
-  menuBuilder.buildMenu();
+  window1.on('closed', () => {
+    window1 = null;
+  });
+
+  window2.on('closed', () => {
+    window2 = null;
+  });
+
+  const menuBuilder1 = new MenuBuilder(window1);
+  const menuBuilder2 = new MenuBuilder(window2);
+  menuBuilder1.buildMenu();
+  menuBuilder2.buildMenu();
 
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
