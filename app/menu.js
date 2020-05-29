@@ -1,11 +1,13 @@
 // @flow
 import { app, Menu, shell, BrowserWindow } from 'electron';
+import { alertCounter } from './actions/counter';
 
 export default class MenuBuilder {
   mainWindow: BrowserWindow;
 
-  constructor(mainWindow: BrowserWindow) {
+  constructor(mainWindow: BrowserWindow, store) {
     this.mainWindow = mainWindow;
+    this.store = store;
   }
 
   buildMenu() {
@@ -71,6 +73,12 @@ export default class MenuBuilder {
           accelerator: 'Command+Q',
           click: () => {
             app.quit();
+          }
+        },
+        {
+          label: 'Check Main State',
+          click: () => {
+            this.store.dispatch(alertCounter());
           }
         }
       ]
@@ -194,6 +202,12 @@ export default class MenuBuilder {
             accelerator: 'Ctrl+W',
             click: () => {
               this.mainWindow.close();
+            }
+          },
+          {
+            label: 'Check Main State',
+            click: () => {
+              this.store.dispatch(alertCounter());
             }
           }
         ]

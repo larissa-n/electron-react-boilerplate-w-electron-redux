@@ -1,4 +1,5 @@
 // @flow
+import { dialog, BrowserWindow } from 'electron';
 import type { GetState, Dispatch } from '../reducers/types';
 
 export const INCREMENT_COUNTER = 'INCREMENT_COUNTER';
@@ -33,5 +34,14 @@ export function incrementAsync(delay: number = 1000) {
     setTimeout(() => {
       dispatch(increment());
     }, delay);
+  };
+}
+
+export function alertCounter() {
+  return (dispatch, getState) => {
+    const WIN = BrowserWindow.getFocusedWindow();
+    const message = `Counter: ${getState().counter}`;
+    const options = { message };
+    dialog.showMessageBox(WIN, options);
   };
 }
